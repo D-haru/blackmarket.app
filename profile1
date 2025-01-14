@@ -1,0 +1,638 @@
+import '/auth/firebase_auth/auth_util.dart';
+import '/backend/firebase_storage/storage.dart';
+import '/components/nav_bar1/nav_bar1_widget.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_widgets.dart';
+import '/flutter_flow/upload_data.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+
+import 'profile06_model.dart';
+export 'profile06_model.dart';
+
+class Profile06Widget extends StatefulWidget {
+  const Profile06Widget({super.key});
+
+  @override
+  State<Profile06Widget> createState() => _Profile06WidgetState();
+}
+
+class _Profile06WidgetState extends State<Profile06Widget>
+    with TickerProviderStateMixin {
+  late Profile06Model _model;
+
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _model = createModel(context, () => Profile06Model());
+
+    _model.tabBarController = TabController(
+      vsync: this,
+      length: 2,
+      initialIndex: 0,
+    )..addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _model.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _model.unfocusNode.canRequestFocus
+          ? FocusScope.of(context).requestFocus(_model.unfocusNode)
+          : FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        key: scaffoldKey,
+        appBar: AppBar(
+          backgroundColor: Color(0xFF09201C),
+          iconTheme:
+              IconThemeData(color: FlutterFlowTheme.of(context).primaryText),
+          automaticallyImplyLeading: false,
+          title: Text(
+            '자스민',
+            style: FlutterFlowTheme.of(context).headlineSmall.override(
+                  fontFamily: 'Outfit',
+                  fontSize: 24,
+                  letterSpacing: 0,
+                ),
+          ),
+          actions: [
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(0, 0, 23, 0),
+                  child: InkWell(
+                    splashColor: Colors.transparent,
+                    focusColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    onTap: () async {
+                      GoRouter.of(context).prepareAuthEvent();
+                      await authManager.signOut();
+                      GoRouter.of(context).clearRedirectLocation();
+
+                      context.goNamedAuth('Login', context.mounted);
+                    },
+                    child: Icon(
+                      Icons.logout,
+                      color: Color(0xFFFFF9F9),
+                      size: 26,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          centerTitle: false,
+          elevation: 0,
+        ),
+        body: SafeArea(
+          top: true,
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(15, 0, 15, 0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Padding(
+                                padding:
+                                    EdgeInsetsDirectional.fromSTEB(0, 0, 20, 0),
+                                child: Container(
+                                  width: 100,
+                                  height: 100,
+                                  child: Stack(
+                                    alignment: AlignmentDirectional(1, 1),
+                                    children: [
+                                      Align(
+                                        alignment: AlignmentDirectional(0, 0),
+                                        child: AuthUserStreamWidget(
+                                          builder: (context) => Container(
+                                            width: 93,
+                                            height: 93,
+                                            decoration: BoxDecoration(
+                                              color:
+                                                  FlutterFlowTheme.of(context)
+                                                      .secondaryBackground,
+                                              image: DecorationImage(
+                                                fit: BoxFit.cover,
+                                                image: Image.network(
+                                                  valueOrDefault<String>(
+                                                    currentUserPhoto,
+                                                    'https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg',
+                                                  ),
+                                                ).image,
+                                              ),
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color: Color(0xFF2B4A46),
+                                                width: 3,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Align(
+                                        alignment: AlignmentDirectional(1, 1),
+                                        child: InkWell(
+                                          splashColor: Colors.transparent,
+                                          focusColor: Colors.transparent,
+                                          hoverColor: Colors.transparent,
+                                          highlightColor: Colors.transparent,
+                                          onTap: () async {
+                                            final selectedMedia =
+                                                await selectMediaWithSourceBottomSheet(
+                                              context: context,
+                                              imageQuality: 80,
+                                              allowPhoto: true,
+                                              pickerFontFamily: 'Inter',
+                                            );
+                                            if (selectedMedia != null &&
+                                                selectedMedia.every((m) =>
+                                                    validateFileFormat(
+                                                        m.storagePath,
+                                                        context))) {
+                                              setState(() => _model
+                                                  .isDataUploading = true);
+                                              var selectedUploadedFiles =
+                                                  <FFUploadedFile>[];
+
+                                              var downloadUrls = <String>[];
+                                              try {
+                                                showUploadMessage(
+                                                  context,
+                                                  'Uploading file...',
+                                                  showLoading: true,
+                                                );
+                                                selectedUploadedFiles =
+                                                    selectedMedia
+                                                        .map((m) =>
+                                                            FFUploadedFile(
+                                                              name: m
+                                                                  .storagePath
+                                                                  .split('/')
+                                                                  .last,
+                                                              bytes: m.bytes,
+                                                              height: m
+                                                                  .dimensions
+                                                                  ?.height,
+                                                              width: m
+                                                                  .dimensions
+                                                                  ?.width,
+                                                              blurHash:
+                                                                  m.blurHash,
+                                                            ))
+                                                        .toList();
+
+                                                downloadUrls =
+                                                    (await Future.wait(
+                                                  selectedMedia.map(
+                                                    (m) async =>
+                                                        await uploadData(
+                                                            m.storagePath,
+                                                            m.bytes),
+                                                  ),
+                                                ))
+                                                        .where((u) => u != null)
+                                                        .map((u) => u!)
+                                                        .toList();
+                                              } finally {
+                                                ScaffoldMessenger.of(context)
+                                                    .hideCurrentSnackBar();
+                                                _model.isDataUploading = false;
+                                              }
+                                              if (selectedUploadedFiles
+                                                          .length ==
+                                                      selectedMedia.length &&
+                                                  downloadUrls.length ==
+                                                      selectedMedia.length) {
+                                                setState(() {
+                                                  _model.uploadedLocalFile =
+                                                      selectedUploadedFiles
+                                                          .first;
+                                                  _model.uploadedFileUrl =
+                                                      downloadUrls.first;
+                                                });
+                                                showUploadMessage(
+                                                    context, 'Success!');
+                                              } else {
+                                                setState(() {});
+                                                showUploadMessage(context,
+                                                    'Failed to upload data');
+                                                return;
+                                              }
+                                            }
+                                          },
+                                          child: Container(
+                                            width: 30,
+                                            height: 30,
+                                            decoration: BoxDecoration(
+                                              color: Color(0xFF1683D5),
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color:
+                                                    FlutterFlowTheme.of(context)
+                                                        .primaryBackground,
+                                                width: 3,
+                                              ),
+                                            ),
+                                            child: Icon(
+                                              Icons.add_rounded,
+                                              color: Colors.white,
+                                              size: 16,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.max,
+                                  children: [
+                                    Expanded(
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            10, 0, 0, 0),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.max,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              '100',
+                                              style:
+                                                  FlutterFlowTheme.of(context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        fontFamily:
+                                                            'Readex Pro',
+                                                        fontSize: 17,
+                                                        letterSpacing: 0,
+                                                      ),
+                                            ),
+                                            Padding(
+                                              padding: EdgeInsetsDirectional
+                                                  .fromSTEB(0, 2, 0, 0),
+                                              child: Text(
+                                                '낙찰',
+                                                style:
+                                                    FlutterFlowTheme.of(context)
+                                                        .bodyMedium
+                                                        .override(
+                                                          fontFamily:
+                                                              'Readex Pro',
+                                                          fontSize: 14,
+                                                          letterSpacing: 0,
+                                                          fontWeight:
+                                                              FontWeight.normal,
+                                                        ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.max,
+                                        children: [
+                                          Text(
+                                            '100',
+                                            style: FlutterFlowTheme.of(context)
+                                                .bodyMedium
+                                                .override(
+                                                  fontFamily: 'Readex Pro',
+                                                  fontSize: 17,
+                                                  letterSpacing: 0,
+                                                ),
+                                          ),
+                                          Padding(
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0, 2, 0, 0),
+                                            child: Text(
+                                              '팔로워',
+                                              style:
+                                                  FlutterFlowTheme.of(context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        fontFamily:
+                                                            'Readex Pro',
+                                                        fontSize: 14,
+                                                        letterSpacing: 0,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                      ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.max,
+                                        children: [
+                                          Text(
+                                            '100',
+                                            style: FlutterFlowTheme.of(context)
+                                                .bodyMedium
+                                                .override(
+                                                  fontFamily: 'Readex Pro',
+                                                  fontSize: 17,
+                                                  letterSpacing: 0,
+                                                ),
+                                          ),
+                                          Padding(
+                                            padding:
+                                                EdgeInsetsDirectional.fromSTEB(
+                                                    0, 2, 0, 0),
+                                            child: Text(
+                                              '팔로잉',
+                                              style:
+                                                  FlutterFlowTheme.of(context)
+                                                      .bodyMedium
+                                                      .override(
+                                                        fontFamily:
+                                                            'Readex Pro',
+                                                        fontSize: 14,
+                                                        letterSpacing: 0,
+                                                        fontWeight:
+                                                            FontWeight.normal,
+                                                      ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(15, 6, 0, 0),
+                          child: Text(
+                            '[자스민]',
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  fontFamily: 'Readex Pro',
+                                  fontSize: 15,
+                                  letterSpacing: 0,
+                                ),
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsetsDirectional.fromSTEB(15, 4, 0, 10),
+                          child: Text(
+                            '누구보다 빠르게 갑니다.',
+                            style: FlutterFlowTheme.of(context)
+                                .bodyMedium
+                                .override(
+                                  fontFamily: 'Readex Pro',
+                                  fontSize: 14,
+                                  letterSpacing: 0,
+                                  fontWeight: FontWeight.normal,
+                                ),
+                          ),
+                        ),
+                        Padding(
+                          padding:
+                              EdgeInsetsDirectional.fromSTEB(15, 15, 15, 0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  height: 35,
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFF09201C),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Align(
+                                    alignment: AlignmentDirectional(0, 0),
+                                    child: Padding(
+                                      padding: EdgeInsetsDirectional.fromSTEB(
+                                          8, 6, 8, 6),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.max,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            '프로필 편집',
+                                            style: FlutterFlowTheme.of(context)
+                                                .bodyMedium
+                                                .override(
+                                                  fontFamily: 'Readex Pro',
+                                                  fontSize: 13,
+                                                  letterSpacing: 0,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: Padding(
+                                  padding: EdgeInsetsDirectional.fromSTEB(
+                                      12, 0, 0, 0),
+                                  child: Container(
+                                    height: 35,
+                                    decoration: BoxDecoration(
+                                      color: Color(0xFF09201C),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Align(
+                                      alignment: AlignmentDirectional(0, 0),
+                                      child: Padding(
+                                        padding: EdgeInsetsDirectional.fromSTEB(
+                                            8, 6, 8, 6),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.max,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              'Email',
+                                              style: FlutterFlowTheme.of(
+                                                      context)
+                                                  .bodyMedium
+                                                  .override(
+                                                    fontFamily: 'Readex Pro',
+                                                    fontSize: 13,
+                                                    letterSpacing: 0,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          width: double.infinity,
+                          height: 550,
+                          decoration: BoxDecoration(),
+                          child: Padding(
+                            padding:
+                                EdgeInsetsDirectional.fromSTEB(0, 12, 0, 0),
+                            child: Column(
+                              children: [
+                                Align(
+                                  alignment: Alignment(0, 0),
+                                  child: TabBar(
+                                    labelColor: Color(0xFFFFF9F9),
+                                    unselectedLabelColor: Color(0xFFADB8C5),
+                                    labelStyle: FlutterFlowTheme.of(context)
+                                        .bodyMedium
+                                        .override(
+                                          fontFamily: 'Readex Pro',
+                                          fontSize: 20,
+                                          letterSpacing: 0,
+                                          fontWeight: FontWeight.w600,
+                                          lineHeight: 0,
+                                        ),
+                                    unselectedLabelStyle: TextStyle(),
+                                    indicatorColor: Color(0xFFFFF9F9),
+                                    indicatorWeight: 2,
+                                    tabs: [
+                                      Tab(
+                                        text: '컬렉터',
+                                      ),
+                                      Tab(
+                                        text: '딜러',
+                                      ),
+                                    ],
+                                    controller: _model.tabBarController,
+                                    onTap: (i) async {
+                                      [() async {}, () async {}][i]();
+                                    },
+                                  ),
+                                ),
+                                Expanded(
+                                  child: TabBarView(
+                                    controller: _model.tabBarController,
+                                    children: [
+                                      KeepAliveWidgetWrapper(
+                                        builder: (context) => GridView(
+                                          padding: EdgeInsets.zero,
+                                          gridDelegate:
+                                              SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 3,
+                                            crossAxisSpacing: 1,
+                                            mainAxisSpacing: 1,
+                                            childAspectRatio: 1,
+                                          ),
+                                          primary: false,
+                                          shrinkWrap: true,
+                                          scrollDirection: Axis.vertical,
+                                          children: [
+                                            Image.network(
+                                              'https://picsum.photos/seed/832/600',
+                                              width: 100,
+                                              height: 100,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      KeepAliveWidgetWrapper(
+                                        builder: (context) => GridView(
+                                          padding: EdgeInsets.zero,
+                                          gridDelegate:
+                                              SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount: 3,
+                                            crossAxisSpacing: 1,
+                                            mainAxisSpacing: 1,
+                                            childAspectRatio: 1,
+                                          ),
+                                          primary: false,
+                                          shrinkWrap: true,
+                                          scrollDirection: Axis.vertical,
+                                          children: [
+                                            Image.network(
+                                              'https://picsum.photos/seed/832/600',
+                                              width: 100,
+                                              height: 100,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Container(
+                    width: double.infinity,
+                    height: 0.5,
+                    decoration: BoxDecoration(
+                      color: Color(0xFFDADADA),
+                    ),
+                  ),
+                  Container(
+                    width: double.infinity,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: FlutterFlowTheme.of(context).secondaryBackground,
+                    ),
+                    child: wrapWithModel(
+                      model: _model.navBar1Model,
+                      updateCallback: () => setState(() {}),
+                      child: NavBar1Widget(),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
