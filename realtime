@@ -1,0 +1,146 @@
+import '/auth/firebase_auth/auth_util.dart';
+import '/components/card16_actions_copy_widget.dart';
+import '/components/card16_actions_widget.dart';
+import '/components/nav_bar1/nav_bar1_widget.dart';
+import '/flutter_flow/flutter_flow_theme.dart';
+import '/flutter_flow/flutter_flow_util.dart';
+import '/flutter_flow/flutter_flow_widgets.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+
+import 'tiemrtest_model.dart';
+export 'tiemrtest_model.dart';
+
+class TiemrtestWidget extends StatefulWidget {
+  const TiemrtestWidget({super.key});
+
+  @override
+  State<TiemrtestWidget> createState() => _TiemrtestWidgetState();
+}
+
+class _TiemrtestWidgetState extends State<TiemrtestWidget> {
+  late TiemrtestModel _model;
+
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _model = createModel(context, () => TiemrtestModel());
+  }
+
+  @override
+  void dispose() {
+    _model.dispose();
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _model.unfocusNode.canRequestFocus
+          ? FocusScope.of(context).requestFocus(_model.unfocusNode)
+          : FocusScope.of(context).unfocus(),
+      child: Scaffold(
+        key: scaffoldKey,
+        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        appBar: AppBar(
+          backgroundColor: Color(0xFF09201C),
+          iconTheme:
+              IconThemeData(color: FlutterFlowTheme.of(context).primaryText),
+          automaticallyImplyLeading: false,
+          title: Text(
+            '실시간 경매',
+            style: FlutterFlowTheme.of(context).headlineSmall.override(
+                  fontFamily: 'Outfit',
+                  fontSize: 24,
+                  letterSpacing: 0,
+                ),
+          ),
+          actions: [
+            Row(
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(0, 0, 23, 0),
+                  child: InkWell(
+                    splashColor: Colors.transparent,
+                    focusColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    onTap: () async {
+                      GoRouter.of(context).prepareAuthEvent();
+                      await authManager.signOut();
+                      GoRouter.of(context).clearRedirectLocation();
+
+                      context.goNamedAuth('Login', context.mounted);
+                    },
+                    child: Icon(
+                      Icons.logout,
+                      color: Color(0xFFFFF9F9),
+                      size: 26,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          centerTitle: false,
+          elevation: 0,
+        ),
+        body: SafeArea(
+          top: true,
+          child: Stack(
+            children: [
+              Stack(
+                children: [
+                  Stack(
+                    children: [
+                      SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Padding(
+                              padding:
+                                  EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                              child: wrapWithModel(
+                                model: _model.card16ActionsModel,
+                                updateCallback: () => setState(() {}),
+                                child: Card16ActionsWidget(),
+                              ),
+                            ),
+                            wrapWithModel(
+                              model: _model.card16ActionsCopyModel,
+                              updateCallback: () => setState(() {}),
+                              child: Card16ActionsCopyWidget(),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Stack(
+                        children: [],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              Align(
+                alignment: AlignmentDirectional(0, 0),
+                child: Padding(
+                  padding: EdgeInsetsDirectional.fromSTEB(0, 640, 0, 0),
+                  child: wrapWithModel(
+                    model: _model.navBar1Model,
+                    updateCallback: () => setState(() {}),
+                    child: NavBar1Widget(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
